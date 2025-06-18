@@ -1,13 +1,13 @@
 import { useState } from "react";
-import Button from "../components/ui/Button";
 import { uploadImage } from "../api/uploader";
-import { addNewProduct } from "../api/firebase";
+import Button from "../components/ui/Button";
+import useProducts from "../hooks/useProducts";
 
 export default function NewProduct() {
   const [product, setProduct] = useState({});
   const [file, setFile] = useState();
   const [isUploading, setIsUploading] = useState(false);
-  const [success, setSuccess] = useState();
+  const { addProduct, success } = useProducts();
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -19,22 +19,21 @@ export default function NewProduct() {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!file) return;
+
     setIsUploading(true);
-    uploadImage(file) //
+
+    uploadImage(file)
       .then((url) => {
-        addNewProduct(product, url).then(() => {
-          setSuccess("성공적으로 제품이 추가되었습니다.");
-          setTimeout(() => {
-            setSuccess(null);
-          }, 4000);
-        });
+        addProduct.mutate({ product, url });
       })
       .finally(() => setIsUploading(false));
   };
+
   return (
     <section className="w-full text-center">
       <h2 className="text-2xl font-bold my-4">새로운 제품 등록</h2>
-      {success && <p className="my-2">✔ {success}</p>}
+      {success && <p className="my-2">✅ {success}</p>}
       {file && (
         <img
           className="w-96 mx-auto mb-2"
